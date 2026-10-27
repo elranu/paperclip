@@ -139,7 +139,7 @@ same base for login and logout. The CLI keeps each key under its API base
 and revokes nothing (`auth.ts:70`).
 
 1. As `ranu`, not as `collie`, with `PAPERCLIP_HOME=/home/ranu/repos/paperclip/.paperclip`:
-   `pnpm paperclipai auth login --api-base http://localhost:3200` (the owner
+   `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts auth login --api-base http://localhost:3200` (the owner
    approves it in the browser). The CLI stores the board key in
    `$PAPERCLIP_HOME/auth.json` (`cli/src/config/home.ts:35-37`). `/home/ranu` has
    mode 700, so `collie` and its agents cannot read the key.
@@ -147,7 +147,7 @@ and revokes nothing (`auth.ts:70`).
    It sets `enableNativeRunner=false`, `enableIsolatedWorkspaces` and
    `enableIsolatedWorkspacesByDefault` (one git worktree for each task), and
    `requireBoardApprovalForNewAgents` on each company.
-3. As `ranu`: `pnpm paperclipai auth logout --api-base http://localhost:3200`. This
+3. As `ranu`: `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts auth logout --api-base http://localhost:3200`. This
    revokes the key on the server (`POST /api/cli-auth/revoke-current`) and removes
    the local copy. After this step, no board key exists. If a key exists, this step
    is mandatory with isolation option (a) or (b).

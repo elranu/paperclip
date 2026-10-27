@@ -20,5 +20,5 @@ The owner made these decisions at the start of P0.
 - Use only the disposable demo company. Its workspace is a local test repository with no remote and no secret.
 - Do not create a company for Basilic, or for another repository with secrets or push rights, until the owner decides the isolation again.
 - Use one CEO on `claude_local` and one small issue. Pause the CEO after the demo.
-- Do the bootstrap settings in the web UI with the browser session of the owner. Do not create a board API key. If a board API key is ever needed, revoke it right after use (`pnpm paperclipai auth logout`, pointed at port 3200), and never keep it in a file or in the server environment.
+- Do the bootstrap settings in the web UI with the browser session of the owner. Do not create a board API key. If a board API key is ever needed, revoke it right after use (the CLI command `auth logout` with `--api-base http://localhost:3200`, see `collie/docs/RUNNING.md`), and never keep it in a file or in the server environment.
 - Decide the isolation again before the first real company. The recommendation stays option (c), a separate Linux user: `collie/scripts/isolation/setup-collie-user.sh`.
