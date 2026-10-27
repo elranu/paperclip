@@ -18,5 +18,12 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      # A fork does not get the upstream tags. Fetch the tag that
+      # collie/UPSTREAM names from the upstream repository.
+      - name: Fetch the upstream release tag
+        run: |
+          tag="$(tr -d '[:space:]' < collie/UPSTREAM)"
+          git fetch --no-tags https://github.com/paperclipai/paperclip.git "refs/tags/${tag}:refs/tags/${tag}"
+
       - name: Check that changed upstream files are in FORK.md
         run: collie/scripts/check-fork.sh
