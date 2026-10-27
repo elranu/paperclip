@@ -22,7 +22,9 @@ the logins that you give it by hand. Its GitHub token covers one repository.
 `setup-collie-user.sh` (run with sudo, safe to run again):
 
 1. Creates user `collie` (no sudo group, locked password, home mode 700).
-2. Installs mise, Node 26.10.0 and pnpm 9.15.4 for `collie`.
+2. Finds mise. A mise on PATH wins (for example `/usr/bin/mise`). Else it installs
+   mise in `~/.local/bin`. Then it installs Node 26.10.0 and pnpm 9.15.4 with mise.
+   Node 26 has no Corepack, so mise installs pnpm.
 3. Clones `https://github.com/elranu/paperclip` (branch `collie`) to `/home/collie/paperclip`.
 4. Copies `collie/config/collie.env.example` to `.env`.
 5. Runs `pnpm install --frozen-lockfile`.

@@ -44,11 +44,21 @@ run_root() {
   if [ "$DRY_RUN" -eq 0 ]; then "$@"; fi
 }
 
+# MISE_FIND is shell code. run_collie puts it before every step. It sets MISE to
+# the one mise executable that all steps use: a mise on PATH (for example
+# /usr/bin/mise), else the per-user install in ~/.local/bin (step 4 makes it
+# when it is missing). Write ${MISE} with braces in the steps. "sudo -i" does
+# not escape a plain $NAME, so the shell of the collie user would expand $MISE
+# too early, to an empty string.
+MISE_FIND='MISE="$(type -P mise || true)"; [ -n "${MISE}" ] || MISE="${HOME}/.local/bin/mise"'
+# Shell code: put the tools of mise (Node, pnpm, claude, codex, gh) on PATH.
+MISE_ACTIVATE='eval "$("${MISE}" activate bash)"'
+
 # run_collie 'SHELL CODE': run shell code as the collie user with a clean login environment.
 run_collie() {
   echo "    [${COLLIE_USER}] $1"
   if [ "$DRY_RUN" -eq 0 ]; then
-    sudo -iu "$COLLIE_USER" bash -lc "set -euo pipefail; $1"
+    sudo -iu "$COLLIE_USER" bash -lc "set -euo pipefail; ${MISE_FIND}; $1"
   fi
 }
 
@@ -80,22 +90,24 @@ say "OK: no sudo group."
 say "Step 3: set mode 700 on ${COLLIE_HOME}"
 run_root chmod 700 "$COLLIE_HOME"
 
-# Step 4: install mise, Node and pnpm for the collie user.
-say "Step 4: install mise for '${COLLIE_USER}'"
-run_collie 'command -v mise >/dev/null 2>&1 || [ -x "$HOME/.local/bin/mise" ] || curl -fsSL https://mise.run | sh'
+# Step 4: find or install mise, then install Node and pnpm, for the collie user.
+say "Step 4: find or install mise for '${COLLIE_USER}' (a mise on PATH wins, else ~/.local/bin/mise)"
+run_collie '[ -x "${MISE}" ] || curl -fsSL https://mise.run | sh; echo "mise: ${MISE}"; "${MISE}" --version'
 
 say "Step 5: install Node ${NODE_VERSION} with mise"
-run_collie "export PATH=\"\$HOME/.local/bin:\$PATH\"; mise use --global node@${NODE_VERSION}"
+run_collie "\"\${MISE}\" use --global node@${NODE_VERSION}"
 
+# The profile line holds the same mise path as the steps. A line with another path is replaced.
 say "Step 6: activate mise in the shell profile of '${COLLIE_USER}'"
-run_collie 'grep -q "mise activate" "$HOME/.bashrc" 2>/dev/null || echo '"'"'eval "$($HOME/.local/bin/mise activate bash)"'"'"' >> "$HOME/.bashrc"'
+run_collie 'line="eval \"\$(${MISE} activate bash)\""; grep -qxF "${line}" "${HOME}/.bashrc" 2>/dev/null || { sed -i "/mise activate/d" "${HOME}/.bashrc" 2>/dev/null || true; echo "${line}" >> "${HOME}/.bashrc"; }'
 
-say "Step 7: enable pnpm ${PNPM_VERSION} through corepack"
-run_collie "export PATH=\"\$HOME/.local/bin:\$PATH\"; eval \"\$(mise activate bash)\"; corepack enable --install-directory \"\$HOME/.local/bin\" pnpm; corepack prepare pnpm@${PNPM_VERSION} --activate; pnpm --version"
+# Node 26 does not bundle Corepack. So mise installs the pinned pnpm itself.
+say "Step 7: install pnpm ${PNPM_VERSION} with mise"
+run_collie "\"\${MISE}\" use --global pnpm@${PNPM_VERSION}; ${MISE_ACTIVATE}; pnpm --version"
 
 # Step 7b: install the agent CLIs with mise (pinned versions).
 say "Step 7b: install claude ${CLAUDE_VERSION}, codex ${CODEX_VERSION}, gh ${GH_VERSION} with mise"
-run_collie "export PATH=\"\$HOME/.local/bin:\$PATH\"; eval \"\$(mise activate bash)\"; mise use --global claude@${CLAUDE_VERSION} codex@${CODEX_VERSION} gh@${GH_VERSION}"
+run_collie "${MISE_ACTIVATE}; \"\${MISE}\" use --global claude@${CLAUDE_VERSION} codex@${CODEX_VERSION} gh@${GH_VERSION}"
 
 # Step 8: clone the fork.
 say "Step 8: clone ${REPO_URL} (branch ${REPO_BRANCH}) into ${REPO_DIR}"
@@ -107,11 +119,11 @@ run_collie "if [ -f '${REPO_DIR}/.env' ]; then echo '.env exists. Skip.'; else c
 
 # Step 10: install dependencies.
 say "Step 10: install dependencies (frozen lockfile)"
-run_collie "export PATH=\"\$HOME/.local/bin:\$PATH\"; eval \"\$(mise activate bash)\"; cd '${REPO_DIR}' && pnpm install --frozen-lockfile"
+run_collie "${MISE_ACTIVATE}; cd '${REPO_DIR}' && pnpm install --frozen-lockfile"
 
 # Final check: print the CLI versions as the collie user.
 say "Final check: CLI versions as '${COLLIE_USER}'"
-run_collie "export PATH=\"\$HOME/.local/bin:\$PATH\"; eval \"\$(mise activate bash)\"; claude --version; codex --version; gh --version"
+run_collie "${MISE_ACTIVATE}; claude --version; codex --version; gh --version"
 
 cat <<EOF
 
