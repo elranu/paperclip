@@ -11,7 +11,8 @@ The conflict map is in `../FORK.md`.
 ## Branch model
 
 - `master` mirrors the upstream `master`. Never commit to it.
-  Update it with `gh repo sync elranu/paperclip -b master`.
+  Do not update it on GitHub: no `gh repo sync`, no "Sync fork", no push.
+  See "Inherited workflows" in `FORK.md`.
 - `collie` is our main branch. It starts from an upstream release tag.
   The tag is in `collie/UPSTREAM`.
 - Work branches start from `collie` and come back through a PR.

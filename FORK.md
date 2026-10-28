@@ -39,3 +39,27 @@ A hot file is a probable conflict.
 
 To add a row, put the file path in the second column.
 You can wrap the path in backticks.
+
+## Inherited workflows
+
+The fork has the GitHub workflows of upstream. They do not work on the fork.
+For example, `pr.yml` runs the CI of the upstream `master` on our older tag.
+That CI looks for files that our tag does not have yet.
+
+The owner decided on 2026-10-27 that the inherited workflows stay disabled.
+Only our own workflows (`collie-*.yml`) run. These are disabled in the
+Actions settings: `PR` (`pr.yml`), `commitperclip PR Review`
+(`commitperclip-review.yml`) and `CI profile` (`ci-profile.yml`).
+
+Other inherited workflows are not active yet. They start on a push to the
+`master` of the fork, or on a push of an upstream tag (`v*`). Some of them
+publish (a release, a Docker image). So:
+
+- Do not update the `master` of the fork on GitHub. Do not use
+  `gh repo sync` or "Sync fork", and do not push `master`.
+- Do not push upstream tags to the fork. The fork guard fetches the tag
+  from upstream.
+- Sync with an upstream release tag through a PR into `collie`
+  (`collie/scripts/sync-upstream.sh`).
+- After each sync PR, run `gh workflow list --all`. If an inherited
+  workflow ran, disable it with `gh workflow disable` and say so in the PR.

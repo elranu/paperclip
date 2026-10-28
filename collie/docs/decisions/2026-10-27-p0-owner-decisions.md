@@ -8,6 +8,7 @@ The owner made these decisions at the start of P0.
 | Deployment mode | `authenticated`, private exposure, loopback bind. |
 | First company | A disposable demo company on a local test repository. |
 | Commit and push | Yes for the P0 skeleton: the branch `collie` and the P0 PR. |
+| Inherited upstream workflows | Disabled in the fork. Only our own workflows run. See "Inherited workflows" in `FORK.md`. |
 
 ## The risk that the owner accepts (option a)
 
