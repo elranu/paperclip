@@ -44,7 +44,9 @@ export PAPERCLIP_HOME="${PAPERCLIP_HOME:-$repo/.paperclip}"
 export PAPERCLIP_INSTANCE_ID="${PAPERCLIP_INSTANCE_ID:-collie}"
 export PAPERCLIP_BIND=loopback
 export PAPERCLIP_TELEMETRY_DISABLED=1
-export DO_NOT_TRACK=1
+# DO_NOT_TRACK=1 stops `claude setup-token` from showing the sign-in URL.
+# PAPERCLIP_TELEMETRY_DISABLED=1 is enough to turn Paperclip telemetry off.
+unset DO_NOT_TRACK
 export PORT="${PORT:-3200}"
 instance_dir="$PAPERCLIP_HOME/instances/$PAPERCLIP_INSTANCE_ID"
 base="http://localhost:$PORT"

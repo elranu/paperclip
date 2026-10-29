@@ -14,7 +14,7 @@ the repository in a folder that git ignores.
 | CLI target | `--api-base <url>` or `PAPERCLIP_API_URL`. Default `http://localhost:3100`. The CLI does not read `PORT`. `PAPERCLIP_SERVER_PORT` sets the port only. | `cli/src/commands/client/common.ts:36`, `:111-118`, `:263-281` |
 | No login | `PAPERCLIP_DEPLOYMENT_MODE=local_trusted` (also the default) | `server/src/config-file.ts:52-56` |
 | Local only | `PAPERCLIP_BIND=loopback` | `server/src/config.ts:189` |
-| Telemetry off | `PAPERCLIP_TELEMETRY_DISABLED=1` or `DO_NOT_TRACK=1` (value must be `1`) | `packages/shared/src/telemetry/config.ts:71-76` |
+| Telemetry off | `PAPERCLIP_TELEMETRY_DISABLED=1`. Do not use `DO_NOT_TRACK=1`: with it, `claude setup-token` (2.1.312) does not show the sign-in URL, so the Claude subscription connect step stays on "Preparing browser sign-in". | `packages/shared/src/telemetry/config.ts:71-76` |
 
 Telemetry check: `server/src/index.ts:226` calls `initTelemetry` once, before
 the server starts. `server/src/telemetry.ts:15-16` returns without a client when
@@ -165,7 +165,7 @@ export PAPERCLIP_INSTANCE_ID=collie
 export PAPERCLIP_DEPLOYMENT_MODE=local_trusted
 export PAPERCLIP_BIND=loopback
 export PAPERCLIP_TELEMETRY_DISABLED=1
-export DO_NOT_TRACK=1
+unset DO_NOT_TRACK
 export PORT=3200
 pnpm dev:once
 ```
